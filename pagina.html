@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comunidad de Arte</title>
+<style>
+body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#111;color:#eee}
+header{background:#1f1f1f;padding:20px;text-align:center}
+nav{background:#181818;padding:10px;text-align:center}
+nav a{color:#fff;margin:0 10px;text-decoration:none;font-weight:bold}
+section{padding:20px;max-width:1000px;margin:auto}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:15px}
+.card{background:#1b1b1b;padding:10px;border-radius:10px}
+.card img{width:100%;border-radius:8px}
+input,textarea,button{width:100%;padding:8px;margin-top:6px;border-radius:6px;border:none}
+button{background:#5865F2;color:white;font-weight:bold;cursor:pointer}
+.news{background:#1b1b1b;padding:10px;border-radius:10px;margin-bottom:10px}
+.admin{background:#151515;padding:15px;border-radius:10px;margin-top:20px}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Comunidad de Arte</h1>
+<p>Comparte tu arte y mantente al día con las noticias</p>
+</header>
+
+<nav>
+<a href="#galeria">Galería</a>
+<a href="#subir">Publicar arte</a>
+<a href="#noticias">Noticias</a>
+</nav>
+
+<section id="galeria">
+<h2>Galería</h2>
+<div class="gallery" id="gallery"></div>
+</section>
+
+<section id="subir">
+<h2>Publicar tu arte</h2>
+<input type="text" id="artist" placeholder="Nombre del artista">
+<input type="file" id="image">
+<textarea id="desc" placeholder="Descripción"></textarea>
+<button onclick="uploadArt()">Publicar</button>
+</section>
+
+<section id="noticias">
+<h2>Noticias</h2>
+<div id="newsContainer"></div>
+
+<div class="admin">
+<h3>Publicar noticia (solo admin)</h3>
+<input type="password" id="adminPass" placeholder="Contraseña de admin">
+<input type="text" id="newsTitle" placeholder="Título de la noticia">
+<textarea id="newsText" placeholder="Contenido"></textarea>
+<button onclick="publishNews()">Publicar noticia</button>
+</div>
+</section>
+
+<script>
+
+const ADMIN_PASSWORD = "1234"; // puedes cambiarla
+
+function uploadArt(){
+const artist=document.getElementById('artist').value
+const file=document.getElementById('image').files[0]
+const desc=document.getElementById('desc').value
+
+if(!file)return alert('Sube una imagen')
+
+const reader=new FileReader()
+reader.onload=function(e){
+const card=document.createElement('div')
+card.className='card'
+card.innerHTML=`<img src="${e.target.result}"><h4>${artist}</h4><p>${desc}</p>`
+
+document.getElementById('gallery').appendChild(card)
+}
+reader.readAsDataURL(file)
+}
+
+function publishNews(){
+const pass=document.getElementById('adminPass').value
+const title=document.getElementById('newsTitle').value
+const text=document.getElementById('newsText').value
+
+if(pass!==ADMIN_PASSWORD){
+alert('Contraseña incorrecta')
+return
+}
+
+const news=document.createElement('div')
+news.className='news'
+news.innerHTML=`<h3>${title}</h3><p>${text}</p>`
+
+document.getElementById('newsContainer').prepend(news)
+
+document.getElementById('newsTitle').value=''
+document.getElementById('newsText').value=''
+}
+
+</script>
+
+</body>
+</html>
