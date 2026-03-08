@@ -1,11 +1,11 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ArtLabs</title>
 <style>
-:root{--bg:#0f0f14;--card:#1b1b24;--accent:#5865F2;--danger:#e63946;--text:#eeeeee}
+:root{--bg:#0f0f14;--card:#1b1b24;--accent:#5865F2;--danger:#e63946;--warn:#ffb703;--text:#eeeeee}
 body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
 header{background:#1a1a22;padding:30px;text-align:center}
 nav{background:#14141b;padding:12px;text-align:center}
@@ -19,11 +19,13 @@ button{margin-top:6px;padding:7px;border:none;border-radius:6px;font-weight:bold
 .likeBtn{background:var(--danger);color:white}
 .featureBtn{background:var(--accent);color:white}
 .deleteBtn{background:#111;color:#ff6b6b}
+.reportBtn{background:var(--warn);color:black}
 input,textarea{width:100%;padding:8px;margin-top:6px;border-radius:6px;border:none}
 .comment{background:#15151c;padding:6px;border-radius:6px;margin-top:4px;font-size:13px}
 .panel{background:#1b1b24;padding:12px;border-radius:10px;margin-bottom:20px}
 .footer{text-align:center;padding:30px;background:#14141b;margin-top:40px;font-size:14px;color:#aaa}
-.profile{font-size:14px;margin-top:5px;color:#aaa}
+.profileBox{background:#1b1b24;padding:15px;border-radius:10px}
+.small{font-size:13px;color:#aaa}
 </style>
 </head>
 <body>
@@ -35,20 +37,27 @@ input,textarea{width:100%;padding:8px;margin-top:6px;border-radius:6px;border:no
 </header>
 
 <nav>
+<a href="#cuenta">Cuenta</a>
+<a href="#perfil">Perfil</a>
 <a href="#top">Top arte</a>
 <a href="#destacado">Destacado</a>
 <a href="#galeria">Galería</a>
 <a href="#publicar">Publicar</a>
 <a href="#noticias">Noticias</a>
-<a href="#cuenta">Cuenta</a>
 </nav>
 
 <section id="cuenta">
 <h2>👤 Cuenta</h2>
 <div class="panel">
 <input id="username" placeholder="Nombre de usuario">
+<textarea id="bio" placeholder="Descripción del artista"></textarea>
 <button onclick="login()">Entrar / Crear cuenta</button>
 </div>
+</section>
+
+<section id="perfil">
+<h2>🧑 Perfil del artista</h2>
+<div class="profileBox" id="profile"></div>
 </section>
 
 <section id="top">
@@ -87,6 +96,11 @@ input,textarea{width:100%;padding:8px;margin-top:6px;border-radius:6px;border:no
 </div>
 </section>
 
+<section id="reportes">
+<h2>🚨 Reportes de arte</h2>
+<div id="reports"></div>
+</section>
+
 <div class="footer">ArtLabs © 2026 • Comunidad artística</div>
 
 <script>
@@ -95,36 +109,64 @@ const ADMIN_PASSWORD="1234";
 
 let artPosts=JSON.parse(localStorage.getItem("artPosts"))||[];
 let news=JSON.parse(localStorage.getItem("news"))||[];
+let reports=JSON.parse(localStorage.getItem("reports"))||[];
+let profiles=JSON.parse(localStorage.getItem("profiles"))||{};
 let currentUser=localStorage.getItem("user")||null;
 
 function save(){
 localStorage.setItem("artPosts",JSON.stringify(artPosts));
 localStorage.setItem("news",JSON.stringify(news));
+localStorage.setItem("reports",JSON.stringify(reports));
+localStorage.setItem("profiles",JSON.stringify(profiles));
 }
+
+const currentUserDiv=document.getElementById("currentUser");
 
 function updateUserUI(){
 if(currentUser){
 currentUserDiv.innerText="Conectado como: "+currentUser;
+renderProfile();
 }else{
 currentUserDiv.innerText="No has iniciado sesión";
 }
 }
 
-const currentUserDiv=document.getElementById("currentUser");
-
 function login(){
 let name=document.getElementById("username").value;
+let bio=document.getElementById("bio").value;
+
 if(!name) return alert("Escribe un nombre");
 
 currentUser=name;
 localStorage.setItem("user",name);
+
+profiles[name]={bio:bio};
+
+save();
 updateUserUI();
+}
+
+function renderProfile(){
+if(!currentUser) return;
+
+let bio=profiles[currentUser]?.bio||"Sin descripción";
+
+let userArts=artPosts.filter(p=>p.artist===currentUser);
+
+let html=`
+<h3>${currentUser}</h3>
+<p class='small'>${bio}</p>
+<p>🎨 Obras publicadas: ${userArts.length}</p>
+`;
+
+profile.innerHTML=html;
 }
 
 function renderTop(){
 if(artPosts.length===0) return;
 let sorted=[...artPosts].sort((a,b)=>b.likes-a.likes);
 let top=sorted[0];
+
 if(!top) return;
 
 topArt.innerHTML=`
@@ -142,6 +184,18 @@ let div=document.createElement("div");
 div.className="panel";
 div.innerHTML=`<h3>${n.title}</h3><p>${n.text}</p>`;
 newsContainer.appendChild(div);
+});
+}
+
+function renderReports(){
+reportsDiv=document.getElementById("reports");
+reportsDiv.innerHTML="";
+
+reports.forEach(r=>{
+let div=document.createElement("div");
+div.className="panel";
+div.innerHTML=`<p>Arte de ${r.artist}</p><p>Motivo: ${r.reason}</p>`;
+reportsDiv.appendChild(div);
 });
 }
 
@@ -165,11 +219,12 @@ card.className="card";
 card.innerHTML=`
 <img src="${post.image}">
 <h4>${post.artist}</h4>
-<p class="profile">Artista</p>
 <p>${post.desc}</p>
 <div class="likes">❤️ ${post.likes}</div>
+
 <button class="likeBtn" onclick="toggleLike(${index})">${post.liked?'Quitar like':'Dar like'}</button>
 <button class="featureBtn" onclick="setFeatured(${index})">Destacar</button>
+<button class="reportBtn" onclick="reportArt(${index})">🚨 Reportar</button>
 
 <input id="c${index}" placeholder="Comentar">
 <button onclick="addComment(${index})">Comentar</button>
@@ -188,5 +243,90 @@ function uploadArt(){
 if(!currentUser) return alert("Debes iniciar sesión");
 
 let file=document.getElementById("image").files[0];
-let desc=document.getElementById("desc")
+let desc=document.getElementById("desc").value;
+
+if(!file) return alert("Sube una imagen");
+
+let reader=new FileReader();
+reader.onload=e=>{
+artPosts.push({artist:currentUser,desc:desc,image:e.target.result,likes:0,liked:false,comments:[]});
+save();
+renderGallery();
+renderProfile();
+};
+reader.readAsDataURL(file);
+}
+
+function toggleLike(i){
+if(!artPosts[i].liked){artPosts[i].likes++;artPosts[i].liked=true}
+else{artPosts[i].likes--;artPosts[i].liked=false}
+
+if(artPosts[i].likes<0) artPosts[i].likes=0;
+
+save();
+renderGallery();
+}
+
+function addComment(i){
+let input=document.getElementById("c"+i);
+if(!input.value) return;
+artPosts[i].comments.push(input.value);
+input.value="";
+save();
+renderGallery();
+}
+
+function reportArt(i){
+let reason=prompt("Motivo del reporte:");
+if(!reason) return;
+
+reports.push({artist:artPosts[i].artist,reason:reason});
+save();
+renderReports();
+}
+
+function setFeatured(i){
+let p=artPosts[i];
+featured.innerHTML=`
+<img src="${p.image}" style="width:100%;max-width:400px;border-radius:10px">
+<h3>${p.artist}</h3>
+<p>${p.desc}</p>
+<p>❤️ ${p.likes} likes</p>`;
+}
+
+function publishNews(){
+let pass=document.getElementById("adminPass").value;
+if(pass!==ADMIN_PASSWORD) return alert("Contraseña incorrecta");
+
+let title=document.getElementById("newsTitle").value;
+let text=document.getElementById("newsText").value;
+
+if(!title||!text) return;
+
+news.unshift({title:title,text:text});
+save();
+renderNews();
+}
+
+function deleteArt(index){
+let pass=prompt("Contraseña de admin para borrar arte:");
+if(pass!==ADMIN_PASSWORD) return alert("Contraseña incorrecta");
+
+if(confirm("¿Seguro que quieres borrar este arte?")){
+artPosts.splice(index,1);
+save();
+renderGallery();
+}
+}
+
+updateUserUI();
+renderGallery();
+renderNews();
+renderReports();
+
+</script>
+
+</body>
+</html>
+
 
