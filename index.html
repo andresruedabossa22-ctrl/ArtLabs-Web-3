@@ -3,34 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Comunidad de Arte</title>
+<title>ArtLabs - Comunidad de Arte</title>
 <style>
-body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#111;color:#eee}
-header{background:#1f1f1f;padding:20px;text-align:center}
-nav{background:#181818;padding:10px;text-align:center}
-nav a{color:#fff;margin:0 10px;text-decoration:none;font-weight:bold}
-section{padding:20px;max-width:1000px;margin:auto}
-.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:15px}
-.card{background:#1b1b1b;padding:10px;border-radius:10px}
+body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#0f0f14;color:#eee}
+header{background:#1a1a22;padding:25px;text-align:center}
+header h1{margin:0}
+nav{background:#14141b;padding:10px;text-align:center}
+nav a{color:#fff;margin:0 12px;text-decoration:none;font-weight:bold}
+section{padding:25px;max-width:1100px;margin:auto}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
+.card{background:#1b1b24;padding:12px;border-radius:12px;position:relative}
 .card img{width:100%;border-radius:8px}
+.card h4{margin:6px 0}
+.likes{margin-top:5px;font-size:14px}
+.likeBtn{margin-top:6px;padding:6px;border:none;border-radius:6px;background:#5865F2;color:white;cursor:pointer}
 input,textarea,button{width:100%;padding:8px;margin-top:6px;border-radius:6px;border:none}
 button{background:#5865F2;color:white;font-weight:bold;cursor:pointer}
-.news{background:#1b1b1b;padding:10px;border-radius:10px;margin-bottom:10px}
-.admin{background:#151515;padding:15px;border-radius:10px;margin-top:20px}
+.news{background:#1b1b24;padding:12px;border-radius:10px;margin-bottom:12px}
+.admin{background:#15151c;padding:15px;border-radius:10px;margin-top:20px}
+.featured{background:#222233;padding:12px;border-radius:10px;margin-bottom:20px}
 </style>
 </head>
 <body>
 
 <header>
-<h1>Comunidad de Arte</h1>
-<p>Comparte tu arte y mantente al día con las noticias</p>
+<h1>ArtLabs</h1>
+<p>Comunidad donde los artistas comparten su arte 🎨</p>
 </header>
 
 <nav>
+<a href="#destacado">Destacado</a>
 <a href="#galeria">Galería</a>
 <a href="#subir">Publicar arte</a>
 <a href="#noticias">Noticias</a>
 </nav>
+
+<section id="destacado">
+<h2>🏆 Arte destacado</h2>
+<div class="featured" id="featured">Aún no hay arte destacado.</div>
+</section>
 
 <section id="galeria">
 <h2>Galería</h2>
@@ -60,45 +71,88 @@ button{background:#5865F2;color:white;font-weight:bold;cursor:pointer}
 
 <script>
 
-const ADMIN_PASSWORD = "1234"; // puedes cambiarla
+const ADMIN_PASSWORD = "1234";
+let artPosts = JSON.parse(localStorage.getItem("artPosts")) || [];
+
+function savePosts(){
+localStorage.setItem("artPosts",JSON.stringify(artPosts));
+}
+
+function renderGallery(){
+const gallery=document.getElementById('gallery');
+gallery.innerHTML="";
+
+artPosts.forEach((post,index)=>{
+const card=document.createElement('div');
+card.className='card';
+
+card.innerHTML=`
+<img src="${post.image}">
+<h4>${post.artist}</h4>
+<p>${post.desc}</p>
+<div class="likes">❤️ ${post.likes}</div>
+<button class="likeBtn" onclick="likePost(${index})">Like</button>
+<button class="likeBtn" onclick="setFeatured(${index})">Destacar</button>
+`;
+
+gallery.appendChild(card);
+});
+}
 
 function uploadArt(){
-const artist=document.getElementById('artist').value
-const file=document.getElementById('image').files[0]
-const desc=document.getElementById('desc').value
+const artist=document.getElementById('artist').value;
+const file=document.getElementById('image').files[0];
+const desc=document.getElementById('desc').value;
 
-if(!file)return alert('Sube una imagen')
+if(!file)return alert('Sube una imagen');
 
-const reader=new FileReader()
+const reader=new FileReader();
 reader.onload=function(e){
-const card=document.createElement('div')
-card.className='card'
-card.innerHTML=`<img src="${e.target.result}"><h4>${artist}</h4><p>${desc}</p>`
+artPosts.push({
+artist:artist,
+desc:desc,
+image:e.target.result,
+likes:0
+});
 
-document.getElementById('gallery').appendChild(card)
+savePosts();
+renderGallery();
+};
+reader.readAsDataURL(file);
 }
-reader.readAsDataURL(file)
+
+function likePost(index){
+artPosts[index].likes++;
+savePosts();
+renderGallery();
+}
+
+function setFeatured(index){
+const post=artPosts[index];
+document.getElementById("featured").innerHTML=`
+<img src="${post.image}" style="width:100%;max-width:400px;border-radius:10px"><h3>${post.artist}</h3><p>${post.desc}</p>
+`;
 }
 
 function publishNews(){
-const pass=document.getElementById('adminPass').value
-const title=document.getElementById('newsTitle').value
-const text=document.getElementById('newsText').value
+const pass=document.getElementById('adminPass').value;
+const title=document.getElementById('newsTitle').value;
+const text=document.getElementById('newsText').value;
 
 if(pass!==ADMIN_PASSWORD){
-alert('Contraseña incorrecta')
-return
+alert('Contraseña incorrecta');
+return;
 }
 
-const news=document.createElement('div')
-news.className='news'
-news.innerHTML=`<h3>${title}</h3><p>${text}</p>`
+const news=document.createElement('div');
+news.className='news';
+news.innerHTML=`<h3>${title}</h3><p>${text}</p>`;
 
-document.getElementById('newsContainer').prepend(news)
+document.getElementById('newsContainer').prepend(news);
 
-document.getElementById('newsTitle').value=''
-document.getElementById('newsText').value=''
 }
+
+renderGallery();
 
 </script>
 
