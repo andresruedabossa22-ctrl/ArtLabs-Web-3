@@ -1,88 +1,133 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ArtLabs - Comunidad de Arte</title>
+<title>ArtLabs</title>
 <style>
-body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#0f0f14;color:#eee}
-header{background:#1a1a22;padding:25px;text-align:center}
-nav{background:#14141b;padding:10px;text-align:center}
-nav a{color:#fff;margin:0 12px;text-decoration:none;font-weight:bold}
+:root{--bg:#0f0f14;--card:#1b1b24;--accent:#5865F2;--danger:#e63946;--text:#eeeeee}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+header{background:#1a1a22;padding:30px;text-align:center}
+nav{background:#14141b;padding:12px;text-align:center}
+nav a{color:white;margin:0 12px;text-decoration:none;font-weight:bold}
 section{padding:25px;max-width:1100px;margin:auto}
-.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
-.card{background:#1b1b24;padding:12px;border-radius:12px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
+.card{background:var(--card);padding:12px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.4)}
 .card img{width:100%;border-radius:8px}
-.card h4{margin:6px 0}
-.card p{font-size:14px}
 .likes{font-size:14px;margin-top:4px}
-.likeBtn{margin-top:6px;padding:6px;border:none;border-radius:6px;background:#e63946;color:white;cursor:pointer}
-.featureBtn{margin-top:6px;padding:6px;border:none;border-radius:6px;background:#5865F2;color:white;cursor:pointer}
-.commentBox{margin-top:8px}
-.comment{font-size:13px;background:#15151c;padding:6px;border-radius:6px;margin-top:4px}
-input,textarea,button{width:100%;padding:8px;margin-top:6px;border-radius:6px;border:none}
-button{background:#5865F2;color:white;font-weight:bold;cursor:pointer}
-.featured{background:#222233;padding:12px;border-radius:10px;margin-bottom:20px}
-.top{background:#1b1b24;padding:12px;border-radius:10px;margin-bottom:20px}
-.footer{text-align:center;padding:20px;background:#14141b;margin-top:40px;font-size:14px;color:#aaa}
+button{margin-top:6px;padding:7px;border:none;border-radius:6px;font-weight:bold;cursor:pointer;width:100%}
+.likeBtn{background:var(--danger);color:white}
+.featureBtn{background:var(--accent);color:white}
+.deleteBtn{background:#111;color:#ff6b6b}
+input,textarea{width:100%;padding:8px;margin-top:6px;border-radius:6px;border:none}
+.comment{background:#15151c;padding:6px;border-radius:6px;margin-top:4px;font-size:13px}
+.panel{background:#1b1b24;padding:12px;border-radius:10px;margin-bottom:20px}
+.footer{text-align:center;padding:30px;background:#14141b;margin-top:40px;font-size:14px;color:#aaa}
+.profile{font-size:14px;margin-top:5px;color:#aaa}
 </style>
 </head>
 <body>
 
 <header>
-<h1>ArtLabs</h1>
-<p>Comunidad donde los artistas comparten su arte 🎨</p>
+<h1>🎨 ArtLabs</h1>
+<p>Red social para artistas</p>
+<div id="currentUser"></div>
 </header>
 
 <nav>
 <a href="#top">Top arte</a>
 <a href="#destacado">Destacado</a>
 <a href="#galeria">Galería</a>
-<a href="#subir">Publicar</a>
+<a href="#publicar">Publicar</a>
+<a href="#noticias">Noticias</a>
+<a href="#cuenta">Cuenta</a>
 </nav>
 
+<section id="cuenta">
+<h2>👤 Cuenta</h2>
+<div class="panel">
+<input id="username" placeholder="Nombre de usuario">
+<button onclick="login()">Entrar / Crear cuenta</button>
+</div>
+</section>
+
 <section id="top">
-<h2>🔥 Arte con más likes</h2>
-<div class="top" id="topArt">Aún no hay arte popular.</div>
+<h2>🔥 Arte más popular</h2>
+<div class="panel" id="topArt">Aún no hay arte popular.</div>
 </section>
 
 <section id="destacado">
 <h2>🏆 Arte destacado</h2>
-<div class="featured" id="featured">Aún no hay arte destacado.</div>
+<div class="panel" id="featured">Aún no hay arte destacado.</div>
 </section>
 
 <section id="galeria">
-<h2>Galería</h2>
+<h2>🖼 Galería</h2>
+<input id="search" placeholder="Buscar artista..." oninput="renderGallery()">
 <div class="gallery" id="gallery"></div>
 </section>
 
-<section id="subir">
-<h2>Publicar tu arte</h2>
-<input type="text" id="artist" placeholder="Nombre del artista">
+<section id="publicar">
+<h2>📤 Publicar arte</h2>
 <input type="file" id="image">
 <textarea id="desc" placeholder="Descripción"></textarea>
-<button onclick="uploadArt()">Publicar</button>
+<button onclick="uploadArt()">Publicar arte</button>
 </section>
 
-<div class="footer">ArtLabs © 2026</div>
+<section id="noticias">
+<h2>📰 Noticias</h2>
+<div id="newsContainer"></div>
+
+<div class="panel">
+<h3>Panel de admin</h3>
+<input type="password" id="adminPass" placeholder="Contraseña admin">
+<input id="newsTitle" placeholder="Título">
+<textarea id="newsText" placeholder="Noticia"></textarea>
+<button onclick="publishNews()">Publicar noticia</button>
+</div>
+</section>
+
+<div class="footer">ArtLabs © 2026 • Comunidad artística</div>
 
 <script>
 
-let artPosts = JSON.parse(localStorage.getItem("artPosts")) || [];
+const ADMIN_PASSWORD="1234";
 
-function savePosts(){
+let artPosts=JSON.parse(localStorage.getItem("artPosts"))||[];
+let news=JSON.parse(localStorage.getItem("news"))||[];
+let currentUser=localStorage.getItem("user")||null;
+
+function save(){
 localStorage.setItem("artPosts",JSON.stringify(artPosts));
+localStorage.setItem("news",JSON.stringify(news));
+}
+
+function updateUserUI(){
+if(currentUser){
+currentUserDiv.innerText="Conectado como: "+currentUser;
+}else{
+currentUserDiv.innerText="No has iniciado sesión";
+}
+}
+
+const currentUserDiv=document.getElementById("currentUser");
+
+function login(){
+let name=document.getElementById("username").value;
+if(!name) return alert("Escribe un nombre");
+
+currentUser=name;
+localStorage.setItem("user",name);
+updateUserUI();
 }
 
 function renderTop(){
 if(artPosts.length===0) return;
-
 let sorted=[...artPosts].sort((a,b)=>b.likes-a.likes);
 let top=sorted[0];
-
 if(!top) return;
 
-document.getElementById("topArt").innerHTML=`
+topArt.innerHTML=`
 <img src="${top.image}" style="width:100%;max-width:400px;border-radius:10px">
 <h3>${top.artist}</h3>
 <p>${top.desc}</p>
@@ -90,37 +135,47 @@ document.getElementById("topArt").innerHTML=`
 `;
 }
 
+function renderNews(){
+newsContainer.innerHTML="";
+news.forEach(n=>{
+let div=document.createElement("div");
+div.className="panel";
+div.innerHTML=`<h3>${n.title}</h3><p>${n.text}</p>`;
+newsContainer.appendChild(div);
+});
+}
+
 function renderGallery(){
-const gallery=document.getElementById('gallery');
+let search=document.getElementById("search").value.toLowerCase();
+
 gallery.innerHTML="";
 
 artPosts.forEach((post,index)=>{
 
+if(!post.artist.toLowerCase().includes(search)) return;
+
 if(!post.comments) post.comments=[];
 
-const liked = post.liked || false;
-
 let commentsHTML="";
-post.comments.forEach(c=>{
-commentsHTML+=`<div class='comment'>${c}</div>`;
-});
+post.comments.forEach(c=>{commentsHTML+=`<div class='comment'>${c}</div>`});
 
-const card=document.createElement('div');
-card.className='card';
+let card=document.createElement("div");
+card.className="card";
 
 card.innerHTML=`
 <img src="${post.image}">
 <h4>${post.artist}</h4>
+<p class="profile">Artista</p>
 <p>${post.desc}</p>
-<div class="likes">❤️ ${post.likes || 0}</div>
-<button class="likeBtn" onclick="toggleLike(${index})">${liked ? 'Quitar like' : 'Dar like'}</button>
+<div class="likes">❤️ ${post.likes}</div>
+<button class="likeBtn" onclick="toggleLike(${index})">${post.liked?'Quitar like':'Dar like'}</button>
 <button class="featureBtn" onclick="setFeatured(${index})">Destacar</button>
 
-<div class="commentBox">
-<input id="comment${index}" placeholder="Escribe un comentario">
+<input id="c${index}" placeholder="Comentar">
 <button onclick="addComment(${index})">Comentar</button>
 ${commentsHTML}
-</div>
+
+<button class="deleteBtn" onclick="deleteArt(${index})">🗑 Borrar (admin)</button>
 `;
 
 gallery.appendChild(card);
@@ -130,72 +185,8 @@ renderTop();
 }
 
 function uploadArt(){
-const artist=document.getElementById('artist').value;
-const file=document.getElementById('image').files[0];
-const desc=document.getElementById('desc').value;
+if(!currentUser) return alert("Debes iniciar sesión");
 
-if(!artist) return alert('Escribe tu nombre');
-if(!file) return alert('Sube una imagen');
+let file=document.getElementById("image").files[0];
+let desc=document.getElementById("desc")
 
-const reader=new FileReader();
-reader.onload=function(e){
-artPosts.push({
-artist:artist,
-desc:desc,
-image:e.target.result,
-likes:0,
-liked:false,
-comments:[]
-});
-
-savePosts();
-renderGallery();
-};
-reader.readAsDataURL(file);
-}
-
-function toggleLike(index){
-if(!artPosts[index].liked){
-artPosts[index].likes++;
-artPosts[index].liked=true;
-}else{
-artPosts[index].likes--;
-artPosts[index].liked=false;
-}
-
-if(artPosts[index].likes<0) artPosts[index].likes=0;
-
-savePosts();
-renderGallery();
-}
-
-function addComment(index){
-const input=document.getElementById("comment"+index);
-
-if(!input.value) return;
-
-artPosts[index].comments.push(input.value);
-
-input.value="";
-
-savePosts();
-renderGallery();
-}
-
-function setFeatured(index){
-const post=artPosts[index];
-
-featured.innerHTML=`
-<img src="${post.image}" style="width:100%;max-width:400px;border-radius:10px">
-<h3>${post.artist}</h3>
-<p>${post.desc}</p>
-<p>❤️ ${post.likes} likes</p>
-`;
-}
-
-renderGallery();
-
-</script>
-
-</body>
-</html>
